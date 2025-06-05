@@ -1,0 +1,44 @@
+# Build and distribution files
+build/
+dist/
+*.exe
+*.spec
+
+# FFmpeg binaries (downloaded by setup script)
+ffmpeg/
+
+# Build scripts (not needed for source code)
+build_exe.py
+setup_ffmpeg.py
+build_for_friends.bat
+BUILD_INSTRUCTIONS.md
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# User settings (personal preferences)
+settings.json
+
+# Virtual environment
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp 
