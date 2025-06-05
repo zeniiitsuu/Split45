@@ -62,14 +62,19 @@ class App(ctk.CTk):
             print(f"Error saving settings: {e}")
 
     def estimate_time(self, video_count, audio_only=False, pipeline=False):
+        """Estimate completion time based on video count and options"""
         download_time_per_video = 25 if audio_only else 35
         processing_time_per_video = 10 if audio_only else 15
+        
+        delay_time = (video_count - 1) * 3 if video_count > 1 else 0
+        
         if pipeline:
-            total_download_time = video_count * download_time_per_video
+            total_download_time = (video_count * download_time_per_video) + delay_time
             total_processing_time = video_count * processing_time_per_video
             estimated_seconds = max(total_download_time, total_processing_time) + (video_count * 2)
         else:
-            estimated_seconds = (video_count * download_time_per_video) + (video_count * processing_time_per_video)
+            estimated_seconds = ((video_count * download_time_per_video) + delay_time) + (video_count * processing_time_per_video)
+        
         return estimated_seconds
 
     def format_duration(self, seconds):
@@ -312,14 +317,17 @@ class App(ctk.CTk):
         audio_only = self.download_format.get() == "MP3"
         process_together = self.process_together_var.get()
         
+        # Reset stats and start timing
         self.download_stats = {"current": 0, "total": len(urls), "completed": 0}
         self.processing_stats = {"current": 0, "completed": 0, "total_segments": 0}
         self.processing_active = process_together
         self.start_time = time.time()
         
+        # Store estimated time and start continuous timer
         self.estimated_time = self.estimate_time(len(urls), audio_only, process_together)
         self.start_time_updater()
         
+        # Show time estimate
         media_type = "audio files" if audio_only else "videos"
         mode = "pipeline" if process_together else "sequential"
         
@@ -328,8 +336,10 @@ class App(ctk.CTk):
         )
         
         if process_together:
+            # Start pipeline mode
             self.start_pipeline(urls, audio_only)
         else:
+            # Traditional sequential mode
             thread = threading.Thread(
                 target=self.download_thread,
                 args=(urls, audio_only, False)
@@ -366,6 +376,10 @@ class App(ctk.CTk):
             
             for idx, url in enumerate(urls):
                 self.download_stats["current"] = idx + 1
+                
+                if idx > 0:
+                    print(f"Waiting 3 seconds before next download to avoid YouTube throttling...")
+                    time.sleep(3)
                 
                 try:
                     self.update_download_progress(
@@ -531,8 +545,9 @@ class App(ctk.CTk):
         self.process_button.configure(state="disabled")
         audio_only = self.output_format.get() == "Convert to MP3"
         
+        # Start timing and show estimate
         self.start_time = time.time()
-        self.estimated_time = len(files) * 15
+        self.estimated_time = len(files) * 15  # Rough estimate for processing only
         self.start_time_updater()
         
         media_type = "audio files" if audio_only else "videos"
@@ -585,17 +600,20 @@ class App(ctk.CTk):
         if self.timer_running and self.start_time:
             elapsed = self.get_elapsed_time(self.start_time)
             
+            # Update download time display
             if hasattr(self, 'download_time_label'):
-                if self.estimated_time and elapsed < 5:
+                if self.estimated_time and elapsed < 5:  # Show estimate for first 5 seconds
                     self.download_time_label.configure(text=f"Est: {self.format_duration(self.estimated_time)}")
                 else:
                     self.download_time_label.configure(text=f"Elapsed: {self.format_duration(elapsed)}")
             
+            # Update processing time display if active
             if self.processing_active and hasattr(self, 'processing_time_label'):
                 self.processing_time_label.configure(text=f"Elapsed: {self.format_duration(elapsed)}")
         
+        # Schedule next update if timer is still running
         if self.timer_running:
-            self.after(1000, self.update_time_displays)
+            self.after(1000, self.update_time_displays)  # Update every second
 
 if __name__ == "__main__":
     app = App()
