@@ -2,6 +2,12 @@
 
 A YouTube video downloader and 45-minute splitter tool.
 
+## Download
+
+**Want to use Split45 right away? No installation needed!**
+
+[📥 Download Split45.exe](https://github.com/zeniiitsuu/Split45/releases/tag/1.0) - Just download and double-click to run
+
 ## Features
 
 - Download YouTube videos in lowest quality or MP3 audio
